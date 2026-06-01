@@ -438,6 +438,7 @@
     <div class="action-row">
       <button class="btn primary" onclick="saveEntry()">save day</button>
       <button class="btn" onclick="clearForm()">clear</button>
+      <button class="btn" onclick="exportData()" style="margin-left:auto;">export for Claude</button>
       <span class="save-msg" id="save-msg">saved</span>
     </div>
   </div>
@@ -628,6 +629,107 @@ function renderHistory() {
       ${tagHtml ? `<div class="ec-tags">${tagHtml}</div>` : ''}
     </div>`;
   }).join('');
+}
+
+function exportData() {
+  const data = load();
+  const entries = Object.values(data).sort((a, b) => a.day - b.day);
+  if (!entries.length) { alert('Nothing logged yet — come back after your first entry.'); return; }
+
+  const energyLabels = ['','wrecked','low','okay','solid','dialed'];
+  const d = today();
+
+  // compute averages
+  let sleepVals = [], waterVals = [], energyVals = [], bedVals = [];
+  entries.forEach(e => {
+    if (e.sleep) sleepVals.push(parseFloat(e.sleep));
+    if (e.water) waterVals.push(parseFloat(e.water));
+    if (e.energy) energyVals.push(parseInt(e.energy));
+    if (e.bed) bedVals.push(parseFloat(e.bed));
+  });
+  const avg = arr => arr.length ? (arr.reduce((a,b) => a+b, 0) / arr.length) : null;
+  const pct = (arr, fn) => arr.length ? Math.round(arr.filter(fn).length / arr.length * 100) : null;
+
+  // tag frequency
+  const tagCounts = {};
+  entries.forEach(e => {
+    (e.tags || []).forEach(t => {
+      const label = typeof t === 'string' ? t : t.label;
+      tagCounts[label] = (tagCounts[label] || 0) + 1;
+    });
+  });
+  const tagLines = Object.entries(tagCounts).sort((a,b) => b[1]-a[1]).map(([k,v]) => `  ${k}: ${v}x`).join('\n');
+
+  // streak
+  let streak = 0;
+  for (let i = d; i >= 1; i--) { if (data[i]) streak++; else break; }
+
+  // water goal hit rate (>=100oz)
+  const waterGoalPct = pct(entries, e => parseFloat(e.water||0) >= 100);
+  // bed on time rate (<=22 = 10pm)
+  const bedPct = pct(entries.filter(e => e.bed), e => parseFloat(e.bed) <= 22);
+  // energy >= 4 rate
+  const highEnergyPct = pct(entries.filter(e => e.energy), e => parseInt(e.energy) >= 4);
+
+  const sleepAvg = avg(sleepVals);
+  const waterAvg = avg(waterVals);
+  const energyAvg = avg(energyVals);
+  const bedAvg = avg(bedVals);
+
+  function toTime(h) {
+    if (h === null) return '—';
+    const hr = Math.floor(h);
+    const min = Math.round((h - hr) * 60);
+    const suffix = hr >= 12 ? 'pm' : 'am';
+    const hr12 = hr > 12 ? hr - 12 : (hr === 0 ? 12 : hr);
+    return `${hr12}:${min.toString().padStart(2,'0')}${suffix}`;
+  }
+
+  // build summary block
+  let summary = `SEXY SUMMER 100 — EXPORT\n`;
+  summary += `Generated: ${new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}\n`;
+  summary += `Current day: ${d} / 100  |  Phase: ${phase(d)}\n`;
+  summary += `Days logged: ${entries.length}  |  Current streak: ${streak} days\n`;
+  summary += `\n── AVERAGES ──────────────────────────\n`;
+  summary += `Sleep:   ${sleepAvg ? sleepAvg.toFixed(1) + 'h' : '—'}\n`;
+  summary += `Water:   ${waterAvg ? Math.round(waterAvg) + 'oz' : '—'}\n`;
+  summary += `Energy:  ${energyAvg ? energyAvg.toFixed(1) + '/5 (' + energyLabels[Math.round(energyAvg)] + ')' : '—'}\n`;
+  summary += `Bed:     ${toTime(bedAvg)}\n`;
+  summary += `\n── CONSISTENCY ───────────────────────\n`;
+  summary += `Water goal (≥100oz): ${waterGoalPct !== null ? waterGoalPct + '%' : '—'} of logged days\n`;
+  summary += `Bed by 10pm:         ${bedPct !== null ? bedPct + '%' : '—'} of logged days\n`;
+  summary += `High energy (≥4):    ${highEnergyPct !== null ? highEnergyPct + '%' : '—'} of logged days\n`;
+  summary += `\n── TAG FREQUENCY ─────────────────────\n`;
+  summary += tagLines || '  (none yet)';
+  summary += `\n\n── DAILY ENTRIES ─────────────────────\n`;
+
+  entries.forEach(e => {
+    summary += `\nDay ${e.day} — ${fmt(e.date)}\n`;
+    if (e.sleep || e.water || e.energy || e.bed) {
+      const mets = [];
+      if (e.sleep) mets.push(`sleep: ${e.sleep}h`);
+      if (e.water) mets.push(`water: ${e.water}oz`);
+      if (e.energy) mets.push(`energy: ${energyLabels[e.energy] || e.energy}/5`);
+      if (e.bed) mets.push(`bed: ${toTime(parseFloat(e.bed))}`);
+      summary += `  metrics: ${mets.join('  |  ')}\n`;
+    }
+    if (e.workout) summary += `  workout: ${e.workout}\n`;
+    if (e.food) summary += `  food: ${e.food}\n`;
+    if (e.notes) summary += `  notes: ${e.notes}\n`;
+    if (e.tags && e.tags.length) {
+      const labels = e.tags.map(t => typeof t === 'string' ? t : t.label).join(', ');
+      summary += `  tags: ${labels}\n`;
+    }
+  });
+
+  // download
+  const blob = new Blob([summary], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ss100-export-day${d}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // init
