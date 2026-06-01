@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sexy Summer 100</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0c;
+    --bg2: #171714;
+    --bg3: #1e1e1a;
+    --bg4: #252521;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede6;
+    --text2: #9e9b93;
+    --text3: #5c5a55;
+    --green: #f4a7b9;
+    --green-dim: #2e1a20;
+    --green-mid: #6b2d40;
+    --amber: #e8a84a;
+    --amber-dim: #3a2910;
+    --red: #e05c5c;
+    --red-dim: #3a1515;
+    --blue: #6aacf0;
+    --blue-dim: #112240;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+
+  body { min-height: 100vh; }
+
+  /* ─── layout ─── */
+  .app { max-width: 780px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ─── header ─── */
+  .site-header {
+    padding: 40px 0 32px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 36px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .site-title {
+    font-family: var(--serif);
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .site-title em { font-style: italic; color: var(--green); }
+  .header-meta { text-align: right; }
+  .day-counter { font-size: 13px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; }
+  .day-big { font-family: var(--serif); font-size: 36px; color: var(--text2); line-height: 1; }
+  .day-big span { color: var(--text3); font-size: 20px; }
+
+  /* ─── progress grid ─── */
+  .grid-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .day-grid {
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 500px) { .day-grid { grid-template-columns: repeat(10, 1fr); } }
+  .dot {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    cursor: default;
+    transition: background 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .dot.done { background: var(--green-mid); border-color: var(--green); }
+  .dot.today { border: 1.5px solid var(--green); background: var(--green-dim); }
+  .dot.today.done { background: var(--green-mid); }
+  .dot.clickable { cursor: pointer; }
+  .dot.clickable:hover { border-color: var(--border2); }
+  .grid-legend { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* ─── stats row ─── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 32px; }
+  @media (max-width: 540px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-card .s-label { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  .stat-card .s-val { font-family: var(--serif); font-size: 28px; color: var(--text); line-height: 1; }
+  .stat-card .s-unit { font-size: 12px; color: var(--text3); margin-left: 3px; }
+
+  /* ─── tabs ─── */
+  .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 28px; gap: 0; }
+  .tab-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 10px 18px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text3);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab-btn:hover:not(.active) { color: var(--text2); }
+
+  /* ─── section headings ─── */
+  .section-head {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 10px; margin-top: 24px;
+  }
+  .section-head:first-child { margin-top: 0; }
+
+  /* ─── metrics ─── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 4px; }
+  @media (max-width: 540px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+  .metric-box {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .metric-box .mb-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); margin-bottom: 6px; }
+  .metric-box input, .metric-box select {
+    font-family: var(--serif);
+    font-size: 24px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0;
+    line-height: 1.2;
+  }
+  .metric-box input::placeholder { color: var(--text3); }
+  .metric-box select { font-size: 14px; font-family: var(--sans); cursor: pointer; }
+  .metric-box select option { background: var(--bg2); }
+
+  /* ─── fields ─── */
+  .fields-grid { display: grid; gap: 12px; }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  .field textarea {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field textarea::placeholder { color: var(--text3); }
+  .field textarea:focus { border-color: var(--border2); }
+
+  /* ─── tags ─── */
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+  .tag {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    color: var(--text3);
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.12s;
+    user-select: none;
+  }
+  .tag:hover { border-color: var(--border2); color: var(--text2); }
+  .tag.on { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .tag.warn.on { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .tag.bad.on { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+  /* ─── action row ─── */
+  .action-row { display: flex; gap: 10px; margin-top: 24px; align-items: center; }
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    transition: all 0.12s;
+    letter-spacing: 0.02em;
+  }
+  .btn:hover { background: var(--bg4); color: var(--text); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .btn.primary:hover { background: var(--green-mid); }
+
+  .save-msg {
+    font-size: 12px;
+    color: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-left: 4px;
+  }
+  .save-msg.show { opacity: 1; }
+
+  /* ─── phase badge ─── */
+  .phase-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--green-dim);
+    border: 0.5px solid var(--green-mid);
+    color: var(--green);
+    letter-spacing: 0.04em;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+
+  /* ─── past entries ─── */
+  #tab-history { display: none; }
+  #tab-history.active { display: block; }
+  #tab-today.hidden { display: none; }
+
+  .entry-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .entry-card:hover { border-color: var(--border2); }
+  .entry-card .ec-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .entry-card .ec-day { font-family: var(--serif); font-size: 20px; color: var(--text); }
+  .entry-card .ec-date { font-size: 12px; color: var(--text3); }
+  .entry-card .ec-metrics { display: flex; gap: 14px; font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+  .entry-card .ec-metrics span { color: var(--text2); }
+  .entry-card .ec-note { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .entry-card .ec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .entry-card .ec-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--green-dim); border: 0.5px solid var(--green-mid); color: var(--green); }
+  .entry-card .ec-tag.warn { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .entry-card .ec-tag.bad { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+  .no-entries { color: var(--text3); font-size: 14px; padding: 24px 0; }
+
+  /* ─── streak ─── */
+  .streak-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--amber-dim);
+    border: 0.5px solid var(--amber);
+    color: var(--amber);
+    margin-right: 10px;
+  }
+
+  /* ─── divider ─── */
+  hr { border: none; border-top: 0.5px solid var(--border); margin: 28px 0; }
+
+  /* ─── scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+  /* ─── fade in ─── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .app { animation: fadeUp 0.4s ease; }
+
+  /* ─── tooltip on dot ─── */
+  .dot[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    border: 0.5px solid var(--border2);
+    color: var(--text2);
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- header -->
+  <header class="site-header">
+    <div>
+      <h1 class="site-title"><em>Sexy</em> Summer 100</h1>
+      <div style="font-size:13px; color:var(--text3); margin-top:6px;">
+        <span id="phase-badge" class="phase-badge">Phase 1 — build</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="day-counter">day</div>
+      <div class="day-big" id="day-display">1 <span>/ 100</span></div>
+      <div style="font-size:12px; color:var(--text3); margin-top:2px;" id="date-display"></div>
+    </div>
+  </header>
+
+  <!-- progress grid -->
+  <div class="grid-label">progress</div>
+  <div class="day-grid" id="day-grid"></div>
+  <div class="grid-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green-mid); border:0.5px solid var(--green);"></div>logged</div>
+    <div class="legend-item"><div class="legend-dot" style="border:1.5px solid var(--green); background:var(--green-dim);"></div>today</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bg3); border:0.5px solid var(--border);"></div>upcoming</div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="s-label">streak</div>
+      <div class="s-val" id="stat-streak">0 <span class="s-unit">days</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">logged</div>
+      <div class="s-val" id="stat-logged">0 <span class="s-unit">/ 100</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">avg sleep</div>
+      <div class="s-val" id="stat-sleep">— <span class="s-unit">hrs</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">avg water</div>
+      <div class="s-val" id="stat-water">— <span class="s-unit">oz</span></div>
+    </div>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('today')">today's log</button>
+    <button class="tab-btn" onclick="switchTab('history')">history</button>
+  </div>
+
+  <!-- today tab -->
+  <div id="tab-today">
+    <div class="section-head">metrics</div>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="mb-label">sleep</div>
+        <input type="number" id="m-sleep" min="0" max="14" step="0.5" placeholder="—">
+        <div style="font-size:11px; color:var(--text3); margin-top:2px;">hrs</div>
+      </div>
+      <div class="metric-box">
+        <div class="mb-label">water</div>
+        <input type="number" id="m-water" min="0" max="250" step="4" placeholder="—">
+        <div style="font-size:11px; color:var(--text3); margin-top:2px;">oz</div>
+      </div>
+      <div class="metric-box">
+        <div class="mb-label">energy</div>
+        <select id="m-energy">
+          <option value="">—</option>
+          <option value="1">1 · wrecked</option>
+          <option value="2">2 · low</option>
+          <option value="3">3 · okay</option>
+          <option value="4">4 · solid</option>
+          <option value="5">5 · dialed</option>
+        </select>
+      </div>
+      <div class="metric-box">
+        <div class="mb-label">bed time</div>
+        <input type="number" id="m-bed" min="19" max="27" step="0.5" placeholder="—">
+        <div style="font-size:11px; color:var(--text3); margin-top:2px;">24hr (e.g. 22 = 10pm)</div>
+      </div>
+    </div>
+
+    <div class="section-head">log</div>
+    <div class="fields-grid">
+      <div class="field">
+        <label>workout / movement</label>
+        <textarea id="f-workout" rows="2" placeholder="Planet Fitness Day A — what you did, how it felt, any notes on load or fatigue"></textarea>
+      </div>
+      <div class="field">
+        <label>food</label>
+        <textarea id="f-food" rows="2" placeholder="eggs + bacon at work, Costco rotisserie — stay honest about where you landed"></textarea>
+      </div>
+      <div class="field">
+        <label>notes</label>
+        <textarea id="f-notes" rows="3" placeholder="How the day actually felt. What's working. What isn't. No editing."></textarea>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:20px;">wins + flags</div>
+    <div class="tags-wrap">
+      <div class="tag on" data-type="good" onclick="toggleTag(this)">hit water goal</div>
+      <div class="tag on" data-type="good" onclick="toggleTag(this)">bed by 10</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">stayed low carb</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">workout done</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">rest day (intentional)</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">felt strong</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">bloat low</div>
+      <div class="tag" data-type="good" onclick="toggleTag(this)">salt / electrolytes</div>
+      <div class="tag warn" data-type="warn" onclick="toggleTag(this)">off plan (worth it)</div>
+      <div class="tag warn" data-type="warn" onclick="toggleTag(this)">high stress</div>
+      <div class="tag bad" data-type="bad" onclick="toggleTag(this)">poor sleep</div>
+      <div class="tag bad" data-type="bad" onclick="toggleTag(this)">off plan (drift)</div>
+      <div class="tag bad" data-type="bad" onclick="toggleTag(this)">skipped workout</div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn primary" onclick="saveEntry()">save day</button>
+      <button class="btn" onclick="clearForm()">clear</button>
+      <span class="save-msg" id="save-msg">saved</span>
+    </div>
+  </div>
+
+  <!-- history tab -->
+  <div id="tab-history">
+    <div id="entries-list"></div>
+  </div>
+
+</div>
+
+<script>
+const START = new Date('2026-05-31T00:00:00');
+const TOTAL = 100;
+const KEY = 'ss100_v1';
+
+function today() {
+  const diff = Math.floor((Date.now() - START.getTime()) / 86400000);
+  return Math.max(1, Math.min(diff + 1, TOTAL));
+}
+
+function fmt(d) {
+  return new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function phase(day) {
+  if (day <= 14) return 'Phase 1 — build';
+  if (day <= 28) return 'Phase 2 — push';
+  if (day <= 35) return 'deload';
+  if (day <= 56) return 'Phase 2 — push';
+  if (day <= 63) return 'deload';
+  if (day <= 84) return 'Phase 3 — peak';
+  return 'Phase 4 — peak+';
+}
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+}
+
+function persist(data) {
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { alert('Storage error — your browser may have localStorage disabled.'); }
+}
+
+function getEntry(day) { return load()[day] || null; }
+
+function saveEntry() {
+  const d = today();
+  const data = load();
+  const tags = Array.from(document.querySelectorAll('.tags-wrap .tag.on')).map(t => ({
+    label: t.textContent.trim(),
+    type: t.dataset.type || 'good'
+  }));
+  data[d] = {
+    day: d,
+    date: new Date().toISOString(),
+    sleep: document.getElementById('m-sleep').value,
+    water: document.getElementById('m-water').value,
+    energy: document.getElementById('m-energy').value,
+    bed: document.getElementById('m-bed').value,
+    workout: document.getElementById('f-workout').value.trim(),
+    food: document.getElementById('f-food').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    tags
+  };
+  persist(data);
+  initGrid();
+  updateStats();
+  const msg = document.getElementById('save-msg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+}
+
+function clearForm() {
+  ['m-sleep','m-water','m-bed'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-energy').value = '';
+  ['f-workout','f-food','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('.tags-wrap .tag').forEach(t => t.classList.remove('on'));
+}
+
+function loadIntoForm(entry) {
+  document.getElementById('m-sleep').value = entry.sleep || '';
+  document.getElementById('m-water').value = entry.water || '';
+  document.getElementById('m-energy').value = entry.energy || '';
+  document.getElementById('m-bed').value = entry.bed || '';
+  document.getElementById('f-workout').value = entry.workout || '';
+  document.getElementById('f-food').value = entry.food || '';
+  document.getElementById('f-notes').value = entry.notes || '';
+  const savedTags = (entry.tags || []).map(t => typeof t === 'string' ? t : t.label);
+  document.querySelectorAll('.tags-wrap .tag').forEach(t => {
+    t.classList.toggle('on', savedTags.includes(t.textContent.trim()));
+  });
+  switchTab('today');
+}
+
+function toggleTag(el) {
+  el.classList.toggle('on');
+}
+
+function initGrid() {
+  const d = today();
+  const data = load();
+  const grid = document.getElementById('day-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= TOTAL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    if (data[i]) dot.classList.add('done');
+    if (i === d) dot.classList.add('today');
+    if (i <= d) {
+      dot.classList.add('clickable');
+      dot.title = 'Day ' + i + (data[i] ? ' ✓' : '');
+      const dayNum = i;
+      dot.addEventListener('click', () => {
+        const e = getEntry(dayNum);
+        if (e) loadIntoForm(e);
+      });
+    }
+    grid.appendChild(dot);
+  }
+}
+
+function updateStats() {
+  const d = today();
+  const data = load();
+  let streak = 0, logged = 0, sleepSum = 0, sleepCount = 0, waterSum = 0, waterCount = 0;
+  for (let i = d; i >= 1; i--) {
+    if (data[i]) { if (streak === i || streak === 0) streak++; }
+    else if (streak > 0) break;
+  }
+  streak = 0;
+  for (let i = d; i >= 1; i--) {
+    if (data[i]) streak++;
+    else break;
+  }
+  for (let i = 1; i <= TOTAL; i++) {
+    if (data[i]) {
+      logged++;
+      if (data[i].sleep) { sleepSum += parseFloat(data[i].sleep); sleepCount++; }
+      if (data[i].water) { waterSum += parseFloat(data[i].water); waterCount++; }
+    }
+  }
+  document.getElementById('stat-streak').innerHTML = streak + ' <span class="s-unit">days</span>';
+  document.getElementById('stat-logged').innerHTML = logged + ' <span class="s-unit">/ 100</span>';
+  document.getElementById('stat-sleep').innerHTML = (sleepCount ? (sleepSum/sleepCount).toFixed(1) : '—') + ' <span class="s-unit">hrs</span>';
+  document.getElementById('stat-water').innerHTML = (waterCount ? Math.round(waterSum/waterCount) : '—') + ' <span class="s-unit">oz</span>';
+}
+
+function switchTab(which) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0) === (which === 'today')));
+  document.getElementById('tab-today').classList.toggle('hidden', which !== 'today');
+  document.getElementById('tab-history').classList.toggle('active', which !== 'today');
+  if (which === 'history') renderHistory();
+}
+
+function renderHistory() {
+  const d = today();
+  const data = load();
+  const el = document.getElementById('entries-list');
+  const entries = [];
+  for (let i = d; i >= 1; i--) {
+    if (data[i]) entries.push(data[i]);
+  }
+  if (!entries.length) {
+    el.innerHTML = '<p class="no-entries">No entries yet. Log your first day above.</p>';
+    return;
+  }
+  const energyLabels = ['','wrecked','low','okay','solid','dialed'];
+  el.innerHTML = entries.map(e => {
+    const metrics = [];
+    if (e.sleep) metrics.push(`sleep <span>${e.sleep}h</span>`);
+    if (e.water) metrics.push(`water <span>${e.water}oz</span>`);
+    if (e.energy) metrics.push(`energy <span>${energyLabels[e.energy] || e.energy}</span>`);
+    if (e.bed) metrics.push(`bed <span>${e.bed}:00</span>`);
+    const snippet = [e.workout, e.food, e.notes].filter(Boolean).join(' · ').substring(0, 160);
+    const tagHtml = (e.tags || []).map(t => {
+      const label = typeof t === 'string' ? t : t.label;
+      const type = typeof t === 'object' ? t.type : 'good';
+      const cls = type === 'warn' ? 'ec-tag warn' : type === 'bad' ? 'ec-tag bad' : 'ec-tag';
+      return `<span class="${cls}">${label}</span>`;
+    }).join('');
+    return `<div class="entry-card" onclick="loadIntoForm(${JSON.stringify(e).replace(/"/g,'&quot;')})">
+      <div class="ec-header">
+        <span class="ec-day">Day ${e.day}</span>
+        <span class="ec-date">${fmt(e.date)}</span>
+      </div>
+      ${metrics.length ? `<div class="ec-metrics">${metrics.join(' &nbsp;·&nbsp; ')}</div>` : ''}
+      ${snippet ? `<div class="ec-note">${snippet}</div>` : ''}
+      ${tagHtml ? `<div class="ec-tags">${tagHtml}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// init
+const d = today();
+document.getElementById('day-display').innerHTML = d + ' <span>/ 100</span>';
+document.getElementById('date-display').textContent = fmt(new Date());
+document.getElementById('phase-badge').textContent = phase(d);
+initGrid();
+updateStats();
+const existing = getEntry(d);
+if (existing) loadIntoForm(existing);
+</script>
+</body>
+</html>
